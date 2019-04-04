@@ -41,6 +41,7 @@ function collect_stack_info() {
     for i in $(seq ${COUNT})
     do
         JSTACK "${pid}" >> ${BASE_DIR}/output/${pid}/jstack.$(date +'%Y%m%d%H%M%S').txt
+        sleep ${INTERVAL}
     done
 }
 
