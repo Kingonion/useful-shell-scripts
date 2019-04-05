@@ -28,6 +28,16 @@ function make_dirs() {
     [[ -d "${BASE_DIR}/output" ]] && mkdir -p "${BASE_DIR}/output"
 }
 
+# check if the process is a java process
+# $1 pid
+function check_process() {
+    local pid="${1}"
+    if [[ ! $($JPS | awk '$1 == '"${pid}"' { print $1 }') ]]
+    then
+        return 1
+    fi
+}
+
 # $1 pid
 function collect_top_info() {
     local pid="${1}"
@@ -56,4 +66,12 @@ function collect_heap_info() {
     local pid="${1}"
     JMAP -dump:format=b,file=${BASE_DIR}/output/${pid}/heap.$(date +'%Y%m%d%H%M%S').hprof "${pid}"
 }
+
+function export_functions() {
+    export -f collect_top_info
+    export -f collect_gc_info
+    export -f collect_stack_info
+    export -f collect_heap_info
+}
+
 
