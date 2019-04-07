@@ -50,21 +50,23 @@ function collect_stack_info() {
     local time=$(date +'%Y%m%d%H%M%S')
     for i in $(seq ${COUNT})
     do
-        JSTACK "${pid}" >> ${BASE_DIR}/output/${pid}/jstack.$(date +'%Y%m%d%H%M%S').txt
+        $JSTACK -F "${pid}" >> ${BASE_DIR}/output/${pid}/jstack.$(date +'%Y%m%d%H%M%S').txt
         sleep ${INTERVAL}
+        echo "" >> ${BASE_DIR}/output/${pid}/jstack.$(date +'%Y%m%d%H%M%S').txt
+        echo "==================" >> ${BASE_DIR}/output/${pid}/jstack.$(date +'%Y%m%d%H%M%S').txt
     done
 }
 
 # $1 pid
 function collect_gc_info() {
     local pid="${1}"
-    JSTAT -gcutil "${pid}" $[INTERVAL * 1000] ${COUNT} >> ${BASE_DIR}/output/${pid}/jstat.$(date +'%Y%m%d%H%M%S').txt
+    $JSTAT -gcutil "${pid}" $[INTERVAL * 1000] ${COUNT} >> ${BASE_DIR}/output/${pid}/jstat.$(date +'%Y%m%d%H%M%S').txt
 }
 
 # $1 pid
 function collect_heap_info() {
     local pid="${1}"
-    JMAP -dump:format=b,file=${BASE_DIR}/output/${pid}/heap.$(date +'%Y%m%d%H%M%S').hprof "${pid}"
+    $JMAP -dump:format=b,file=${BASE_DIR}/output/${pid}/heap.$(date +'%Y%m%d%H%M%S').hprof "${pid}"
 }
 
 function export_functions() {
