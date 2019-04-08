@@ -9,6 +9,9 @@ set -e
 
 BASE_DIR=$(cd $(dirname "$BASH_SOURCE[0]"); pwd)
 
+# keyword of java process
+KEYWORD=""
+
 # seconds between two outputs
 INTERVAL=1
 
@@ -82,7 +85,7 @@ function collect_top_info() {
     local pid="${1}"
     local main_class="${2}"
     [[ -d "${BASE_DIR}/output/${main_class}" ]] || mkdir -p "${BASE_DIR}/output/${main_class}"
-    if [ ! -z "${pid}"]
+    if [ ! -z "${pid}" ]
     then 
         top -b -n "${COUNT}" -d "${INTERVAL}" -H -p "${pid}" >> ${BASE_DIR}/output/${main_class}/top.$(date +'%Y%m%d%H%M%S').txt
     fi 
@@ -137,6 +140,33 @@ function export_functions() {
     export -f collect_heap_info
 }
 
+function collect_java_process_info() {
+    if [ "x${KEYWORD}" = "x" ]
+    then 
+        JAVA_PROCESSES="$(${JPS} -l | grep -v 'sun.tools.jps.Jps')"
+    else 
+        JAVA_PROCESSES="$(${JPS} -l | grep ${KEYWORD} | grep -v grep)"
+    fi 
+    if [ "x{JAVA_PROCESSES}" = "x" ] 
+    then 
+        echo "no java process that meeting the condtions"
+        exit 1
+    fi
+    local IFS=$'\n'
+    local process=""
+    for process in $(echo "${JAVA_PROCESSES}")
+    do
+        local pid=$(echo "${process}" | awk '{ print $1 }')
+        local main_class=$(echo "${process}" | awk '{ print $2 }')
+        nohup bash -c "collect_top_info ${pid} ${main_class}" &>/dev/null &
+        nohup bash -c "collect_gc_info ${pid} ${main_class}" &>/dev/null &
+        nohup bash -c "collect_stack_info ${pid} ${main_class}" &>/dev/null &
+        nohup bash -c "collect_heap_info ${pid} ${main_class}" &>/dev/null &
+    done
+}
+
 check_requirements
 
+export_functions
 
+collect_java_process_info
