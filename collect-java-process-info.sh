@@ -21,11 +21,11 @@ function make_dirs() {
 
 # jps must be found
 function check_requirements() {
-    if [ -x $(command -v jps) ]
+    if [ -x "$(command -v jps)" ]
     then 
         JPS=jps
     else
-        if [ -x $(command -v "${JAVA_HOME}/bin/jps") ] 
+        if [ -x "$(command -v ${JAVA_HOME}/bin/jps)" ] 
         then 
             JPS="${JAVA_HOME}/bin/jps"
         else 
@@ -34,31 +34,31 @@ function check_requirements() {
         fi
     fi
 
-    if [ -x $(command -v jstack) ]
+    if [ -x "$(command -v jstack)" ]
     then 
         JSTACK=jstack
     else 
-        if [ -x $(command -v "${JAVA_HOME}/bin/jstack") ]
+        if [ -x "$(command -v ${JAVA_HOME}/bin/jstack)" ]
         then 
             JSTACK="${JAVA_HOME}/bin/jstack"
         fi 
     fi 
 
-    if [ -x $(command -v jstat) ]
+    if [ -x "$(command -v jstat)" ]
     then 
         JSTAT=jstat
     else 
-        if [ -x $(command -v "${JAVA_HOME}/bin/jstat") ]
+        if [ -x "$(command -v ${JAVA_HOME}/bin/jstat)" ]
         then 
             JSTAT="${JAVA_HOME}/bin/jstat"
         fi 
     fi 
 
-    if [ -x $(command -v jmap) ]
+    if [ -x "$(command -v jmap)" ]
     then 
         JMAP=jmap
     else 
-        if [ -x $(command -v "${JAVA_HOME}/bin/jmap") ]
+        if [ -x "$(command -v ${JAVA_HOME}/bin/jmap)" ]
         then 
             JMAP="${JAVA_HOME}/bin/jmap"
         fi 
@@ -77,26 +77,32 @@ function check_process() {
 }
 
 # $1 pid
+# $2 main class name
 function collect_top_info() {
     local pid="${1}"
+    local main_class="${2}"
+    [[ -d "${BASE_DIR}/output/${main_class}" ]] || mkdir -p "${BASE_DIR}/output/${main_class}"
     if [ ! -z "${pid}"]
     then 
-        top -b -n "${COUNT}" -d "${INTERVAL}" -H -p "${pid}" >> ${BASE_DIR}/output/${pid}/top.$(date +'%Y%m%d%H%M%S').txt
+        top -b -n "${COUNT}" -d "${INTERVAL}" -H -p "${pid}" >> ${BASE_DIR}/output/${main_class}/top.$(date +'%Y%m%d%H%M%S').txt
     fi 
 }
 
 # $1 pid
 function collect_stack_info() {
     local pid="${1}"
+    local main_class="${2}"
     local time=$(date +'%Y%m%d%H%M%S')
+    [[ -d "${BASE_DIR}/output/${main_class}" ]] || mkdir -p "${BASE_DIR}/output/${main_class}"
     for i in $(seq ${COUNT})
     do
         if [ ! -z "${JSTACK}" ] && [ ! -z "${pid}" ]
         then 
-            ${JSTACK} -F "${pid}" >> ${BASE_DIR}/output/${pid}/jstack.$(date +'%Y%m%d%H%M%S').txt
+            ${JSTACK} -F "${pid}" >> ${BASE_DIR}/output/${main_class}/jstack.$(date +'%Y%m%d%H%M%S').txt
             sleep ${INTERVAL}
-            echo "" >> ${BASE_DIR}/output/${pid}/jstack.$(date +'%Y%m%d%H%M%S').txt
-            echo "==================" >> ${BASE_DIR}/output/${pid}/jstack.$(date +'%Y%m%d%H%M%S').txt
+            echo "" >> ${BASE_DIR}/output/${main_class}/jstack.$(date +'%Y%m%d%H%M%S').txt
+            echo "==================" >> ${BASE_DIR}/output/${main_class}/jstack.$(date +'%Y%m%d%H%M%S').txt
+            echo "" >> ${BASE_DIR}/output/${main_class}/jstack.$(date +'%Y%m%d%H%M%S').txt
         fi 
     done
 }
@@ -104,9 +110,11 @@ function collect_stack_info() {
 # $1 pid
 function collect_gc_info() {
     local pid="${1}"
+    local main_class="${2}"
+    [[ -d "${BASE_DIR}/output/${main_class}" ]] || mkdir -p "${BASE_DIR}/output/${main_class}"
     if [ ! -z "${JSTAT}" ] && [ ! -z "${pid}" ]
     then 
-        ${JSTAT} -gcutil "${pid}" $[INTERVAL * 1000] ${COUNT} >> ${BASE_DIR}/output/${pid}/jstat.$(date +'%Y%m%d%H%M%S').txt
+        ${JSTAT} -gcutil "${pid}" $[INTERVAL * 1000] ${COUNT} >> ${BASE_DIR}/output/${main_class}/jstat.$(date +'%Y%m%d%H%M%S').txt
     fi 
     
 }
@@ -114,9 +122,11 @@ function collect_gc_info() {
 # $1 pid
 function collect_heap_info() {
     local pid="${1}"
+    local main_class="${2}"
+    [[ -d "${BASE_DIR}/output/${main_class}" ]] || mkdir -p "${BASE_DIR}/output/${main_class}"
     if [ ! -z "${JMAP}" ] && [ ! -z "${pid}" ]
     then 
-        ${JMAP} -dump:format=b,file=${BASE_DIR}/output/${pid}/heap.$(date +'%Y%m%d%H%M%S').hprof "${pid}"
+        ${JMAP} -dump:format=b,file=${BASE_DIR}/output/${main_class}/heap.$(date +'%Y%m%d%H%M%S').hprof "${pid}"
     fi 
 }
 
@@ -128,3 +138,5 @@ function export_functions() {
 }
 
 check_requirements
+
+
