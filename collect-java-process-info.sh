@@ -2,7 +2,7 @@
 #
 #      Author: neuwangcong@gmail.com
 # Description: A simple shell that can help you collect some infomation about Java process,
-#              such as cpu, memory, stack.
+#              such as cpu, gc, stack, heap.
 #
 
 set -e
@@ -40,7 +40,7 @@ function check_requirements() {
         then 
             JPS="${JAVA_HOME}/bin/jps"
         else 
-            echo 'jps not found in $PATH or $JAVA_HOME/bin'
+            echo 'jps is not found in $PATH or $JAVA_HOME/bin, jps is needed. exit.'
             exit 1
         fi
     fi
@@ -52,6 +52,8 @@ function check_requirements() {
         if [ -x "$(command -v ${JAVA_HOME}/bin/jstack)" ]
         then 
             JSTACK="${JAVA_HOME}/bin/jstack"
+        else 
+            echo 'jstack is not found in $PATH or $JAVA_HOME/bin, can not collect stack info.'
         fi 
     fi 
 
@@ -62,6 +64,8 @@ function check_requirements() {
         if [ -x "$(command -v ${JAVA_HOME}/bin/jstat)" ]
         then 
             JSTAT="${JAVA_HOME}/bin/jstat"
+        else 
+            echo 'jstat is not found in $PATH or $JAVA_HOME/bin, can not collect gc info.'
         fi 
     fi 
 
@@ -72,6 +76,8 @@ function check_requirements() {
         if [ -x "$(command -v ${JAVA_HOME}/bin/jmap)" ]
         then 
             JMAP="${JAVA_HOME}/bin/jmap"
+        else 
+            echo 'jmap is not found in $PATH or $JAVA_HOME/bin, can not collect heap info.'
         fi 
     fi
 }
