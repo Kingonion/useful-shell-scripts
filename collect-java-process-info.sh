@@ -193,6 +193,8 @@ function usage() {
     echo "--heap                 collect heap info"
     echo "--interval SECONDS     seconds between two collections, default is 1"
     echo "--count COUNT          total count of the collections , default is 5"
+    echo "--keyword KEYWORD      keywords for choosing the java process"
+    exit 1
 }
 
 while [ $# -gt 0 ]
@@ -214,13 +216,21 @@ do
             OUTPUT_HEAP=true
             shift
             ;;
+        --keyword)
+            if [ ! -z "${2}" ]  
+            then 
+                KEYWORD="${2}"
+            else 
+                usage
+            fi 
+            shift 2
+            ;;
         --interval)
             if [[ "${2}" -gt 0 ]] 
             then 
                 COLLECT_INTERVAL="${2}"
             else 
                 usage
-                exit 1
             fi 
             shift 2
             ;;
@@ -230,13 +240,11 @@ do
                 COLLECT_COUNT="${2}"
             else 
                 usage
-                exit 1
             fi 
             shift 2
             ;;
         *)
             usage
-            exit 1
             ;;
     esac
 done
