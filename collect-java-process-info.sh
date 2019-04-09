@@ -21,8 +21,8 @@ COLLECT_COUNT=5
 # whether output cpu info, default is false
 OUTPUT_CPU=false
 
-# whether output memory info, default is false
-OUTPUT_MEMORY=false
+# whether output gc info, default is false
+OUTPUT_GC=false
 
 # whether output stack info, default is false
 OUTPUT_STACK=false
@@ -163,7 +163,7 @@ function collect_java_process_info() {
         then
             nohup bash -c "collect_top_info ${pid}" &>/dev/null &
         fi 
-        if [ "x${OUTPUT_MEMORY}" = "xtrue" ] 
+        if [ "x${OUTPUT_GC}" = "xtrue" ] 
         then
             nohup bash -c "collect_gc_info ${pid}" &>/dev/null &
         fi
@@ -177,6 +177,63 @@ function collect_java_process_info() {
         fi 
     done
 }
+
+function usage() {
+    echo "Usage: bash collect-java-process-info.sh [options..]"
+    echo "Options:"
+    echo "--gc                   collect gc info"
+    echo "--cpu                  collect cpu info"
+    echo "--stack                collect stack info"
+    echo "--heap                 collect heap info"
+    echo "--interval SECONDS     seconds between two collections, default is 1"
+    echo "--count COUNT          total count of the collections , default is 5"
+}
+
+while [ $# -gt 0 ]
+do
+    case "${1}" in
+        --cpu)
+            OUTPUT_CPU=true
+            shift
+            ;;
+        --gc)
+            OUTPUT_GC=true
+            shift
+            ;;
+        --stack)
+            OUTPUT_STACK=true
+            shift
+            ;;
+        --heap)
+            OUTPUT_HEAP=true
+            shift
+            ;;
+        --interval)
+            if [[ "${2}" -gt 0 ]] 
+            then 
+                COLLECT_INTERVAL="${2}"
+            else 
+                usage
+                exit 1
+            fi 
+            shift 2
+            ;;
+        --count)
+            if [[ "${2}" -gt 0 ]] 
+            then 
+                COLLECT_COUNT="${2}"
+            else 
+                usage
+                exit 1
+            fi 
+            shift 2
+            ;;
+        *)
+            usage
+            exit 1
+            ;;
+    esac
+done
 
 check_requirements
 
