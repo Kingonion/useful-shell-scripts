@@ -18,6 +18,18 @@ COLLECT_INTERVAL=1
 # total count of the collections
 COLLECT_COUNT=5
 
+# whether output cpu info, default is false
+OUTPUT_CPU=false
+
+# whether output memory info, default is false
+OUTPUT_MEMORY=false
+
+# whether output stack info, default is false
+OUTPUT_STACK=false
+
+# whether output heap info, default is false
+OUTPUT_HEAP=false
+
 # jps must be found
 function check_requirements() {
     if [ -x "$(command -v jps)" ]
@@ -147,10 +159,22 @@ function collect_java_process_info() {
     for process in $(echo "${JAVA_PROCESSES}")
     do
         local pid=$(echo "${process}" | awk '{ print $1 }')
-        nohup bash -c "collect_top_info ${pid}" &>/dev/null &
-        nohup bash -c "collect_gc_info ${pid}" &>/dev/null &
-        nohup bash -c "collect_stack_info ${pid}" &>/dev/null &
-        nohup bash -c "collect_heap_info ${pid}" &>/dev/null &
+        if [ "x${OUTPUT_CPU}" = "xtrue" ] 
+        then
+            nohup bash -c "collect_top_info ${pid}" &>/dev/null &
+        fi 
+        if [ "x${OUTPUT_MEMORY}" = "xtrue" ] 
+        then
+            nohup bash -c "collect_gc_info ${pid}" &>/dev/null &
+        fi
+        if [ "x${OUTPUT_STACK}" = "xtrue" ] 
+        then
+            nohup bash -c "collect_stack_info ${pid}" &>/dev/null &
+        fi 
+        if [ "x${OUTPUT_HEAP}" = "xtrue" ] 
+        then
+            nohup bash -c "collect_heap_info ${pid}" &>/dev/null &
+        fi 
     done
 }
 
